@@ -102,6 +102,6 @@ app.post("/api/search", async (req, res) => {
   }
 });
 
-app.listen(3002, () => {
-  console.log('Server is running at http://localhost:3002');
+app.listen(process.env.PORT || 3002, () => {
+  console.log(`Server is running on port ${process.env.PORT}`);
 })
