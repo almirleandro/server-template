@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const fetch = require("node-fetch");
+const rateLimit = require("express-rate-limit");
 const knex = require('knex')({
   client: 'pg',
   connection: {
@@ -14,8 +16,14 @@ const knex = require('knex')({
 
 const app = express();
 
+const limiter = rateLimit({
+  windowMs: 1000, // 1 second
+  max: 1, // limit each IP to 1 requests per windowMs
+});
+
 app.use(express.json());
 app.use(cors());
+app.use(limiter);
 
 
 
@@ -73,6 +81,26 @@ app.post('/register', (req,res) => {
     });
   });
 })
+
+app.post("/api/search", async (req, res) => {
+  try {
+    // This uses string interpolation to make our search query string
+    // it pulls the posted query param and reformats it for goodreads
+    const searchString = req.body.q;
+
+    // It uses node-fetch to call the goodreads api, and reads the key from .env
+    const response = await fetch(
+      `https://api.themoviedb.org/3/search/movie?api_key=${process.env.TMBD_KEY}&language=pt-BR&query=${searchString}&page=1&include_adult=false`,
+    );
+    const data  = await response.json();
+    res.json(data.results);
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
 
 app.listen(3002, () => {
   console.log('Server is running at http://localhost:3002');
