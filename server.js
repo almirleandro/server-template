@@ -25,7 +25,7 @@ const limiter = rateLimit({
 const whitelist = ['https://form-experience.herokuapp.com']
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
+    if (whitelist.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))
@@ -35,16 +35,15 @@ const corsOptions = {
 
 app.use(helmet());
 app.use(express.json());
-app.use(cors(corsOptions));
 app.use(limiter);
 
 
 
-app.get('/', (req, res) => {
+app.get('/', cors(corsOptions), (req, res) => {
   res.send('Server is running');
 })
 
-app.post('/signin', (req, res) => {
+app.post('/signin', cors(corsOptions), (req, res) => {
   knex.select('email', 'hash').from('login')
     .where('email', '=', req.body.email)
     .then(data => {
@@ -63,7 +62,7 @@ app.post('/signin', (req, res) => {
     .catch(err => res.status(400).json('Wrong credentials'))
 })
 
-app.post('/register', (req,res) => {
+app.post('/register', cors(corsOptions), (req,res) => {
   const { email, name, password } = req.body;
   bcrypt.genSalt(10, function(err, salt) {
     bcrypt.hash(password, salt, function(err, hash) {
@@ -95,7 +94,7 @@ app.post('/register', (req,res) => {
   });
 })
 
-app.post("/api/search", async (req, res) => {
+app.post("/api/search", cors(corsOptions), async (req, res) => {
   try {
     // This uses string interpolation to make our search query string
     // it pulls the posted query param and reformats it for goodreads
