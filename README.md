@@ -1,4 +1,4 @@
-# The Form Project
+# Server Template
 
 A simple project to test and learn new features from time to time
 
