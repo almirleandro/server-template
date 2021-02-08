@@ -22,10 +22,10 @@ const limiter = rateLimit({
   max: 1, // limit each IP to 1 requests per windowMs
 });
 
-const whitelist = ['https://form-experience.herokuapp.com']
-const corsOptions = {
+var whitelist = ['https://form-experience.herokuapp.com']
+var corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))
