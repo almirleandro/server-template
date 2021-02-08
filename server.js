@@ -22,28 +22,29 @@ const limiter = rateLimit({
   max: 1, // limit each IP to 1 requests per windowMs
 });
 
-var whitelist = ['https://form-experience.herokuapp.com']
-var corsOptionsDelegate = function (req, callback) {
-  var corsOptions;
-  if (whitelist.indexOf(req.header('Origin')) !== -1) {
-    corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
-  } else {
-    corsOptions = { origin: false } // disable CORS for this request
+const whitelist = ['https://form-experience.herokuapp.com']
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
   }
-  callback(null, corsOptions) // callback expects two parameters: error and options
 }
 
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.json());
 app.use(limiter);
 
 
 
-app.get('/', cors(corsOptionsDelegate), (req, res) => {
+app.get('/', (req, res) => {
   res.send('Server is running');
 })
 
-app.post('/signin', cors(corsOptionsDelegate), (req, res) => {
+app.post('/signin', (req, res) => {
   knex.select('email', 'hash').from('login')
     .where('email', '=', req.body.email)
     .then(data => {
@@ -62,7 +63,7 @@ app.post('/signin', cors(corsOptionsDelegate), (req, res) => {
     .catch(err => res.status(400).json('Wrong credentials'))
 })
 
-app.post('/register', cors(corsOptionsDelegate), (req,res) => {
+app.post('/register', (req,res) => {
   const { email, name, password } = req.body;
   bcrypt.genSalt(10, function(err, salt) {
     bcrypt.hash(password, salt, function(err, hash) {
@@ -94,7 +95,7 @@ app.post('/register', cors(corsOptionsDelegate), (req,res) => {
   });
 })
 
-app.post("/api/search", cors(corsOptionsDelegate), async (req, res) => {
+app.post("/api/search", async (req, res) => {
   try {
     // This uses string interpolation to make our search query string
     // it pulls the posted query param and reformats it for goodreads
