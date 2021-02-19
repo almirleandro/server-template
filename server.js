@@ -22,15 +22,9 @@ const limiter = rateLimit({
   max: 1, // limit each IP to 1 requests per windowMs
 });
 
-const whitelist = ['https://form-experience.herokuapp.com']
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  }
+  origin: 'https://form-experience.herokuapp.com',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
 app.use(helmet());
@@ -98,23 +92,48 @@ app.post('/register', (req,res) => {
 app.post("/api/search", async (req, res) => {
   try {
     // This uses string interpolation to make our search query string
-    // it pulls the posted query param and reformats it for goodreads
+    // it pulls the posted query param
     const searchString = req.body.q;
 
-    // It uses node-fetch to call the goodreads api, and reads the key from .env
+    // It uses node-fetch to call the tmdb api, and reads the key from .env
     const response = await fetch(
       `https://api.themoviedb.org/3/search/movie?api_key=${process.env.TMBD_KEY}&language=pt-BR&query=${searchString}&page=1&include_adult=false`,
     );
     const data  = await response.json();
     res.json(data.results);
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    return res.status(500).json('Unable to fetch movie data');
   }
 });
 
+// PORT is given by the host. Otherwise, port 3002 is used
 app.listen(process.env.PORT || 3002, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 })
+
+
+
+
+// Below a simple function to avoid server from idling
+const interval = 25*60*1000; // interval in milliseconds - {25mins x 60s x 1000}ms
+const url = 'https://shielded-ocean-70515.herokuapp.com/';
+
+(function wake() {
+
+  try {
+
+    const handler = setInterval(() => {
+
+      fetch(url)
+        .then(res => console.log(`response-ok: ${res.ok}, status: ${res.status}`))
+        .catch(err => console.error(`Error occured: ${err}`))
+
+    }, interval);
+
+  } catch(err) {
+      console.error('Error occured: retrying...');
+      clearInterval(handler);
+      return setTimeout(() => wake(), 10000);
+  };
+
+})();
