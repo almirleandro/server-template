@@ -1,6 +1,6 @@
 # Server Template
 
-A simple project to test and learn new features from time to time.
+A simple project to test and learn new features on the server side from time to time.
 
 ## Usage
 
