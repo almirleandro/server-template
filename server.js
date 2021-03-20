@@ -115,25 +115,25 @@ app.listen(process.env.PORT || 3002, () => {
 
 
 // Below a simple function to avoid server from idling
-const interval = 25*60*1000; // interval in milliseconds - {25mins x 60s x 1000}ms
-const url = 'https://shielded-ocean-70515.herokuapp.com/';
+// const interval = 25*60*1000; // interval in milliseconds - {25mins x 60s x 1000}ms
+// const url = 'https://shielded-ocean-70515.herokuapp.com/';
 
-(function wake() {
+// (function wake() {
 
-  try {
+//   try {
 
-    const handler = setInterval(() => {
+//     const handler = setInterval(() => {
 
-      fetch(url)
-        .then(res => console.log(`response-ok: ${res.ok}, status: ${res.status}`))
-        .catch(err => console.error(`Error occured: ${err}`))
+//       fetch(url)
+//         .then(res => console.log(`response-ok: ${res.ok}, status: ${res.status}`))
+//         .catch(err => console.error(`Error occured: ${err}`))
 
-    }, interval);
+//     }, interval);
 
-  } catch(err) {
-      console.error('Error occured: retrying...');
-      clearInterval(handler);
-      return setTimeout(() => wake(), 10000);
-  };
+//   } catch(err) {
+//       console.error('Error occured: retrying...');
+//       clearInterval(handler);
+//       return setTimeout(() => wake(), 10000);
+//   };
 
-})();
+// })();
